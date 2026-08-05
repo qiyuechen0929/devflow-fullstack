@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devflow-fullstack"
+version = "1.0.0"
+description = "一站式全链路开发辅助工具，覆盖编码→调试→重构→部署→复盘"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["cli", "code-review", "security", "static-analysis", "developer-tools"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.optional-dependencies]
+# 可选：接入成熟工具链，增强静态分析能力
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+    "bandit>=1.7",
+]
+# 可选：LLM 语义能力（explain/testgen/agents 的 --llm 模式）
+llm = [
+    "openai>=1.0",
+]
+
+[project.scripts]
+# 统一入口：pip install 后可直接使用 `devflow` 命令
+devflow = "devflow_cli:main"
+
+[tool.setuptools]
+py-modules = ["devflow_cli", "setup"]
+
+# scripts/*.py 随包分发，供 devflow 命令在安装后调用
+[tool.setuptools.data-files]
+"share/devflow/scripts" = [
+    "scripts/*.py",
+    "scripts/*.md",
+]
+# 平台接入配置随包分发，供 `devflow setup` 命令使用
+"share/devflow" = [
+    "setup.py",
+    "install.sh",
+    "install.bat",
+    "SKILL.md",
+    "CLAUDE.md",
+    "opencode.json",
+    ".cursorrules",
+    ".windsurfrules",
+    "pyproject.toml",
+]
+"share/devflow/agents" = ["agents/*.yaml"]
+"share/devflow/claude" = [
+    ".claude/settings.json",
+    ".claude/commands/*.md",
+    ".claude/hooks/*.py",
+]
+"share/devflow/trae" = [".trae/rules"]
+"share/devflow/github" = [".github/copilot-instructions.md"]
+"share/devflow/cicd" = ["cicd/*.yml", "cicd/*.md"]
+"share/devflow/skills/devflow-fullstack" = [
+    "skills/devflow-fullstack/SKILL.md",
+]
+
+[tool.setuptools.packages.find]
+include = []
+exclude = ["tests*", "vscode-extension*", ".github*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["scripts"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
