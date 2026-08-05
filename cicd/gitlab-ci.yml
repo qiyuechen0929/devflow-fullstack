@@ -1,0 +1,74 @@
+# DevFlow - GitLab CI Integration
+# 使用方法：将此文件复制为 .gitlab-ci.yml
+#
+# 说明：所有 DevFlow 脚本零第三方依赖，直接用 CI_PROJECT_DIR 即可。
+
+stages:
+  - security
+  - quality
+  - report
+
+variables:
+  DEVFLOW_DIR: "$CI_PROJECT_DIR"
+
+before_script:
+  - python3 --version || (apt-get update && apt-get install -y python3)
+
+devflow-security:
+  stage: security
+  script:
+    - python3 $DEVFLOW_DIR/scripts/review.py --mode security --dir . --format json > security-report.json
+    - |
+      TOTAL=$(python3 -c "import json; print(json.load(open('security-report.json'))['total'])")
+      echo "Security issues: $TOTAL"
+      if [ "$TOTAL" -gt 0 ]; then
+        echo "发现安全问题，请先修复。"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - security-report.json
+    when: always
+  allow_failure: false
+
+devflow-quality:
+  stage: quality
+  script:
+    - python3 $DEVFLOW_DIR/scripts/smell.py --dir . --format json > quality-report.json
+    - python3 $DEVFLOW_DIR/scripts/deps-scan.py --dir . --format json > deps-report.json || true
+  artifacts:
+    paths:
+      - quality-report.json
+      - deps-report.json
+    when: always
+  allow_failure: true
+
+devflow-selftest:
+  stage: quality
+  script:
+    - python3 $DEVFLOW_DIR/scripts/selftest.py
+  allow_failure: true
+
+devflow-report:
+  stage: report
+  script:
+    - |
+      cat > devflow-report.md << 'EOF'
+      # DevFlow Code Review Report
+
+      ## Security Scan
+      ```json
+      $(cat security-report.json 2>/dev/null || echo '{"total":0}')
+      ```
+
+      ## Code Quality
+      ```json
+      $(cat quality-report.json 2>/dev/null || echo '{"total":0}')
+      ```
+      EOF
+  artifacts:
+    paths:
+      - devflow-report.md
+    when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

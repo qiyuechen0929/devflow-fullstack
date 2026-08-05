@@ -1,0 +1,112 @@
+# DevFlow - GitHub Actions Integration
+# 使用方法：将此文件复制到 .github/workflows/devflow.yml
+#
+# 说明：所有 DevFlow 脚本均零第三方依赖，CI 中直接使用 checkout 的代码即可。
+# 可选安装 bandit/ruff 以启用增强扫描（见 toolchain.py）。
+
+name: DevFlow Code Review
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  devflow-review:
+    runs-on: ubuntu-latest
+    name: DevFlow Code Analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史用于 diff
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Self-test
+        run: python scripts/selftest.py
+
+      - name: Run Security Scan
+        id: security
+        run: |
+          python scripts/review.py --mode security --dir . --format json > security-report.json
+          echo "total=$(python -c "import json; print(json.load(open('security-report.json'))['total'])")" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Run Code Smell Check
+        id: quality
+        run: |
+          python scripts/smell.py --dir . --format json > quality-report.json
+          echo "total=$(python -c "import json; print(json.load(open('quality-report.json'))['total'])")" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Run Dependency Scan
+        id: deps
+        run: |
+          python scripts/deps-scan.py --dir . --format json > deps-report.json
+          echo "vulns=$(python -c "import json; print(len(json.load(open('deps-report.json'))['vulnerabilities']))")" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Generate PR Review
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff || true
+          python scripts/pr-review.py --file pr.diff --format json > pr-review.json || echo '{"total":0,"issues":[]}' > pr-review.json
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const read = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return {total: 0, issues: []}; } };
+
+            const security = read('security-report.json');
+            const quality = read('quality-report.json');
+            const deps = read('deps-report.json');
+
+            let comment = '## 🔍 DevFlow Code Review\n\n';
+            comment += '| 检查 | 问题数 |\n|------|--------|\n';
+            comment += `| 安全扫描 | ${security.total || 0} |\n`;
+            comment += `| 代码坏味道 | ${quality.total || 0} |\n`;
+            comment += `| 依赖漏洞 | ${(deps.vulnerabilities || []).length} |\n`;
+
+            const secIssues = (security.issues || []).filter(i => typeof i === 'string' && i.includes('[L4]'));
+            if (secIssues.length > 0) {
+              comment += '\n### ⚠️ 高危安全问题\n';
+              for (const issue of secIssues.slice(0, 10)) comment += `- \`${issue}\`\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: devflow-reports
+          path: |
+            security-report.json
+            quality-report.json
+            deps-report.json
+            pr-review.json
+          if-no-files-found: ignore
+
+      - name: Fail on Critical Issues
+        if: steps.security.outputs.total > 0
+        run: |
+          echo "发现高危安全问题，请先修复再合并。"
+          exit 1

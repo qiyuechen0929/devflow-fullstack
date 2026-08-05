@@ -1,0 +1,19 @@
+# DevFlow 忽略规则示例
+# 每个模式一行，支持目录名、通配符、后缀
+# 被忽略的目录/文件不会出现在 DevFlow 扫描结果中
+
+# 依赖与构建目录
+node_modules/
+vendor/
+dist/
+build/
+.next/
+target/
+__pycache__/
+
+# 临时与生成文件
+*.pyc
+*.pyo
+*.min.js
+*.log
+.DS_Store

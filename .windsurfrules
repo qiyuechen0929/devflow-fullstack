@@ -1,0 +1,58 @@
+# DevFlow Fullstack - Windsurf Rules
+
+## 项目概述
+
+DevFlow 是一站式全链路开发辅助工具，**58 个 Python CLI 脚本** 覆盖编码→调试→重构→工程化→CI→LLM 增强。零第三方依赖。
+
+## 核心命令
+
+```bash
+# 代码审查（AST 驱动）
+python scripts/review.py --mode all --dir .
+python scripts/review.py --mode security --file <file>
+python scripts/review.py --mode security --dir . --format json
+
+# 代码坏味道
+python scripts/smell.py --dir .
+python scripts/smell.py --dir . --format json
+
+# 代码分析
+python scripts/explain.py --file <file>
+python scripts/explain.py --file <file> --llm   # 语义解释（需配置模型）
+
+# 测试生成
+python scripts/testgen.py --file <file> --framework pytest
+python scripts/testgen.py --file <file> --framework pytest --llm
+
+# 文档生成
+python scripts/docgen.py --mode all --file <file>
+python scripts/docgen.py --mode readme --dir .
+
+# 代码质量
+python scripts/env-check.py --dir .
+
+# Git 辅助
+python scripts/git-helper.py --mode commit
+
+# 工作流 / 多角色 / 工具链 / LLM
+python scripts/workflow.py init --dir .
+python scripts/agents.py --team qa,reviewer --dir .
+python scripts/toolchain.py --check
+python scripts/llm.py --check
+python scripts/config-gen.py --type dockerfile --dir .
+```
+
+## 工作原则
+
+1. 优先使用 DevFlow 脚本
+2. 说人话，不堆术语
+3. 分步执行，逐步验证
+4. 任务结束反思评分
+
+## 触发场景
+
+- 代码编写/续写/转换
+- Bug 调试/日志分析
+- 重构/性能优化
+- 文档/测试/配置生成
+- 代码审查/质量评估

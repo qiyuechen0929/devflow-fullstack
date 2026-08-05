@@ -1,0 +1,82 @@
+# DevFlow Fullstack - Cursor Rules
+
+## 项目概述
+
+DevFlow 是一站式全链路开发辅助工具，包含 **58 个 Python CLI 脚本**，覆盖编码、调试、重构、工程化、CI、LLM 增强全流程。零第三方依赖（仅 Python 3.10+）。
+
+## 核心命令
+
+### 代码审查（AST 驱动）
+```bash
+python scripts/review.py --mode all --dir .
+python scripts/review.py --mode security --file <file>
+python scripts/review.py --mode security --dir . --format json
+python scripts/smell.py --dir .
+python scripts/smell.py --dir . --format json
+```
+
+### 代码分析
+```bash
+python scripts/explain.py --file <file>          # 结构分析
+python scripts/explain.py --file <file> --llm    # 语义解释（需配置模型）
+python scripts/explain.py --file <file> --line <num>
+```
+
+### 测试生成
+```bash
+python scripts/testgen.py --file <file> --framework pytest
+python scripts/testgen.py --file <file> --framework pytest --llm  # 语义测试
+```
+
+### 文档生成
+```bash
+python scripts/docgen.py --mode all --file <file>
+python scripts/docgen.py --mode readme --dir .
+```
+
+### 工作流与多角色
+```bash
+python scripts/workflow.py init --dir .   # 五阶段工作流
+python scripts/agents.py --team qa,reviewer --dir .   # 多角色协作
+python scripts/agents.py --team all --dir . --llm     # LLM 汇总结论
+```
+
+### 其他
+```bash
+python scripts/env-check.py --dir .
+python scripts/git-helper.py --mode commit
+python scripts/toolchain.py --check        # 检测 Bandit/Ruff/pytest
+python scripts/llm.py --check              # 检测 LLM 配置
+python scripts/config-gen.py --type dockerfile --dir .
+```
+
+## 使用原则
+
+1. 优先使用项目脚本而非手动操作
+2. 给出建议时说人话，不堆术语
+3. 复杂任务分步执行，每步可验证
+4. 任务结束后反思评分（1-5分）
+
+## 代码风格
+
+- Python 3.10+，UTF-8 编码
+- 函数命名：snake_case
+- 类命名：PascalCase
+- 常量命名：UPPER_SNAKE_CASE
+- 每个函数添加 docstring
+
+## 触发场景
+
+当用户需求涉及以下场景时，主动使用 DevFlow 工具：
+
+1. **代码编写** — 续写、转换、重构（`migrate.py`、`refactor.py`）
+2. **Bug 调试** — 扫描、日志分析、边界测试
+3. **性能优化** — 算法优化、数据库查询优化
+4. **工程化** — 文档、测试、配置生成
+5. **代码审查** — 安全检查、质量评估
+
+## 输出格式
+
+- Bug 扫描结果：`[L1/L2/L3/L4] 文件:行号 - 问题描述`
+- 代码评分：1-10 分，附改进建议
+- 测试用例：正常路径 + 异常路径 + 边界值

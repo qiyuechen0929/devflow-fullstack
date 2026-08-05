@@ -1,0 +1,165 @@
+{
+  "name": "devflow-fullstack",
+  "displayName": "DevFlow Fullstack",
+  "description": "一站式全链路开发辅助工具，覆盖编码→调试→重构→部署→复盘",
+  "version": "1.0.0",
+  "publisher": "qiyuechen0929",
+  "author": {
+    "name": "陈启粤",
+    "email": "qiyuechen0929@github.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qiyuechen0929/devflow-fullstack.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "code review",
+    "security",
+    "testing",
+    "documentation",
+    "devflow"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "devflow.review",
+        "title": "DevFlow: Code Review"
+      },
+      {
+        "command": "devflow.reviewSecurity",
+        "title": "DevFlow: Security Scan"
+      },
+      {
+        "command": "devflow.explain",
+        "title": "DevFlow: Explain Code"
+      },
+      {
+        "command": "devflow.generateTests",
+        "title": "DevFlow: Generate Tests"
+      },
+      {
+        "command": "devflow.generateDocs",
+        "title": "DevFlow: Generate Documentation"
+      },
+      {
+        "command": "devflow.formatCode",
+        "title": "DevFlow: Format Code"
+      },
+      {
+        "command": "devflow.checkDeps",
+        "title": "DevFlow: Check Dependencies"
+      },
+      {
+        "command": "devflow.generateChangelog",
+        "title": "DevFlow: Generate Changelog"
+      },
+      {
+        "command": "devflow.showDashboard",
+        "title": "DevFlow: Show Dashboard"
+      },
+      {
+        "command": "devflow.generateDockerCompose",
+        "title": "DevFlow: Generate Docker Compose"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "devflow.review",
+          "when": "editorHasSelection",
+          "group": "devflow"
+        },
+        {
+          "command": "devflow.explain",
+          "when": "editorHasSelection",
+          "group": "devflow"
+        },
+        {
+          "command": "devflow.generateTests",
+          "when": "editorHasSelection",
+          "group": "devflow"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "devflow.review",
+          "group": "devflow"
+        },
+        {
+          "command": "devflow.checkDeps",
+          "group": "devflow"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DevFlow",
+      "properties": {
+        "devflow.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python 解释器路径"
+        },
+        "devflow.scriptsPath": {
+          "type": "string",
+          "default": "",
+          "description": "DevFlow 脚本路径（留空使用内置脚本）"
+        },
+        "devflow.outputFormat": {
+          "type": "string",
+          "enum": ["text", "json"],
+          "default": "text",
+          "description": "输出格式"
+        },
+        "devflow.autoReview": {
+          "type": "boolean",
+          "default": false,
+          "description": "保存时自动审查"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "devflow",
+          "title": "DevFlow",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "devflow": [
+        {
+          "id": "devflowExplorer",
+          "name": "DevFlow Explorer"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.0.0"
+  }
+}

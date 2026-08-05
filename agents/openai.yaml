@@ -1,0 +1,24 @@
+name: devflow-fullstack
+display_name: DevFlow 全链路
+short_description: 一站式开发辅助：编码→调试→重构→部署→复盘。58 个脚本覆盖全流程。
+default_prompt: "用 DevFlow 审查代码质量并给出优化建议"
+instructions: |
+  使用 DevFlow 工具时遵循以下流程：
+
+  1. **代码审查**：
+     - `python scripts/review.py --mode security --dir .` — 安全扫描
+     - `python scripts/smell.py --dir .` — 坏味道检测
+     - `python scripts/agents.py --team all --dir .` — 多角色全面审查
+
+  2. **代码分析**：
+     - `python scripts/explain.py --file <file>` — 结构分析
+     - `python scripts/explain.py --file <file> --llm` — 语义解释（需配置模型）
+
+  3. **测试/文档**：
+     - `python scripts/testgen.py --file <file> --framework pytest`
+     - `python scripts/docgen.py --mode all --file <file>`
+
+  4. **工作流**：
+     - `python scripts/workflow.py init --dir .` — 初始化五阶段工作流
+
+  所有脚本零第三方依赖，只需 Python 3.10+。
